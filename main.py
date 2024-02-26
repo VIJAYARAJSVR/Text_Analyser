@@ -306,6 +306,21 @@ class Analyzer_App:
         default_txt = ""
         self.textbox.insert(END, default_txt)
 
+        # frequency_lbl = ttk.Label(self.settings_frame, text="Frequent Words Count")
+        # frequency_lbl.config(font=('Courier', 18, 'bold'))
+        # frequency_lbl.pack(side=LEFT, padx=10, pady=10)
+        # frequency_lbl.config(wraplength=100)
+
+        rows = []
+        for i in range(20):
+            cols = []
+            for j in range(2):
+                e = ttk.Label(frame2, text="Frequent")
+                e.grid(row=i, column=j, sticky=NSEW)
+                # e.insert(END, '%d.%d' % (i, j))
+                cols.append(e)
+            rows.append(cols)
+
         tabBar = ttk.Notebook(frame3)
         tabBar.pack()
 
