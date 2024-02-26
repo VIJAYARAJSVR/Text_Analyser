@@ -3,6 +3,7 @@
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 import os
+from tkinter.ttk import Spinbox
 
 import nltk
 # nltk.download('punkt')
@@ -26,6 +27,7 @@ from tkinter import filedialog
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter.scrolledtext import ScrolledText
+from tkinter import colorchooser
 
 
 def printing(name):
@@ -122,7 +124,7 @@ def analyze_word_frequency(text_to_process, most_common):
     # plt.show()
 
 
-def perform_WordCloud(text_to_process, stop_words, max_words, image_file_name, background_color, height, width):
+def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name, background_color, heightt, widthh):
     cleaned_Data = dataCleaning(text_to_process)
     # print(cleaned_Data)
 
@@ -137,9 +139,13 @@ def perform_WordCloud(text_to_process, stop_words, max_words, image_file_name, b
 
     analyze_word_frequency(cleaned_data_text, 30)
 
-    wordcloud = WordCloud(max_words=max_words, stopwords=stop_words, random_state=1,
+    # print(max_wordsss)
+    # print(heightt)
+    # print(widthh)
+
+    wordcloud = WordCloud(max_words=max_wordsss, stopwords=stop_words, random_state=1,
                           background_color=background_color,
-                          height=height, width=width).generate(cleaned_data_text)
+                          height=heightt, width=widthh).generate(cleaned_data_text)
     wordcloud.generate(cleaned_data_text)
     wordcloud.to_file(image_file_name)
 
@@ -147,13 +153,23 @@ def perform_WordCloud(text_to_process, stop_words, max_words, image_file_name, b
 class Analyzer_App:
     folder_path = ''
     text_content = ''
+    # tuple
+    colorchooser_result = ((0, 0, 0), '#000000')
 
     def __init__(self, master):
+        self.textData = ''
         self.selected_file_label = None
         self.path_frame = None
+        self.settings_frame = None
         self.content_frame = None
         self.textbox = None
-
+        self.max_words = tk.IntVar()
+        self.varWidth = tk.IntVar()
+        self.varHeight = tk.IntVar()
+        self.varFrequency = tk.IntVar()
+        self.varWidth.set(700)
+        self.varHeight.set(700)
+        self.varFrequency.set(30)
         self.initialize_UI()
 
     def initialize_UI(self):
@@ -167,6 +183,52 @@ class Analyzer_App:
         head_lbl = ttk.Label(text="Text Analyser", width=25, padding=15)
         head_lbl.config(font=('Courier', 35, 'bold'), foreground='yellow')
         head_lbl.pack()
+
+        settings_row = ttk.Frame(root)
+        settings_row.pack(fill=BOTH, expand=YES)
+        # header and labelframe
+        settings_frame_text = 'WordCloud Settings'
+        self.settings_frame = ttk.Labelframe(settings_row, text=settings_frame_text, padding=15)
+        self.settings_frame.pack(fill=BOTH, expand=YES, anchor=N)
+
+        max_words_lbl = ttk.Label(self.settings_frame, text="Words To Show")
+        max_words_lbl.config(font=('Courier', 22, 'bold'))
+        max_words_lbl.pack(side=LEFT, padx=10, pady=10)
+
+        self.max_words.set(50)
+        spinbox_max_words = Spinbox(self.settings_frame, from_=30, to=100, textvariable=self.max_words)
+        spinbox_max_words.config(font=('Courier', 24, 'bold'), width=10, foreground='yellow')
+        spinbox_max_words.pack(side=LEFT, padx=10, pady=10)
+
+        img_height_lbl = ttk.Label(self.settings_frame, text="Height")
+        img_height_lbl.config(font=('Courier', 22, 'bold'))
+        img_height_lbl.pack(side=LEFT, padx=10, pady=10)
+
+        height_textbox = ttk.Entry(self.settings_frame, width=10, textvariable=self.varHeight)
+        height_textbox.config(font=('Courier', 22, 'bold'), foreground='yellow')
+        height_textbox.pack(side=LEFT, padx=10, pady=10)
+
+        img_width_lbl = ttk.Label(self.settings_frame, text="Width")
+        img_width_lbl.config(font=('Courier', 22, 'bold'))
+        img_width_lbl.pack(side=LEFT, padx=10, pady=10)
+
+        width_textbox = ttk.Entry(self.settings_frame, width=10, textvariable=self.varWidth)
+        width_textbox.config(font=('Courier', 22, 'bold'), foreground='yellow')
+        width_textbox.pack(side=LEFT, padx=10, pady=10)
+
+        styles.configure('ChooseColor.TButton', foreground='orange', font=('Helvetica', 23))
+        colorchooser_button = ttk.Button(self.settings_frame, style='ChooseColor.TButton', text="Choose Color", command=self.choose_color)
+        colorchooser_button.config()
+        colorchooser_button.pack(side=LEFT, padx=10, pady=10)
+
+        frequency_lbl = ttk.Label(self.settings_frame, text="Show Word Frequency")
+        frequency_lbl.config(font=('Courier', 22, 'bold'))
+        frequency_lbl.pack(side=LEFT, padx=10, pady=10)
+
+        frequency_textbox = ttk.Entry(self.settings_frame, width=10, textvariable=self.varFrequency)
+        frequency_textbox.config(font=('Courier', 22, 'bold'), foreground='yellow')
+        frequency_textbox.pack(side=LEFT, padx=10, pady=10)
+
 
         path_row = ttk.Frame(root)
         path_row.pack(fill=BOTH, expand=YES)
@@ -184,16 +246,16 @@ class Analyzer_App:
         # path_lbl.grid(row=0, column=0)
 
         self.selected_file_label = ttk.Label(self.path_frame, text="")
-        folder_path = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
-        self.selected_file_label.config(text=f"{folder_path}")
+        self.folder_path = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
+        self.selected_file_label.config(text=f"{self.folder_path}")
         self.selected_file_label.config(foreground='yellow')
         self.selected_file_label.config(font=('Courier', 25, 'bold'))
         self.selected_file_label.pack(side=LEFT, padx=10, pady=10)
         self.selected_file_label.config(wraplength=600)
 
         # self.selected_file_label.grid(row=0, column=1)
-
-        generate_button = ttk.Button(self.path_frame, text="Show Analysed Text", command=self.generate)
+        styles.configure('analyse.TButton', foreground='orange', font=('Helvetica', 30))
+        generate_button = ttk.Button(self.path_frame, style='analyse.TButton', text="Analyze", command=self.generate)
         generate_button.pack(side=RIGHT, padx=10, pady=10)
 
         open_button = ttk.Button(self.path_frame, text="Open File", command=self.open_file_dialog)
@@ -208,10 +270,10 @@ class Analyzer_App:
         panedwindow.pack(fill=BOTH, expand=True)
         framel = ttk.Frame(panedwindow, width=10, height=300, relief=SUNKEN)
         frame2 = ttk.Frame(panedwindow, width=10, height=300, relief=SUNKEN)
-        frame3 = ttk.Frame(panedwindow, width=400, height=300, relief=SUNKEN)
-        panedwindow.add(framel, weight=1)
+        frame3 = ttk.Frame(panedwindow, width=300, height=300, relief=SUNKEN)
+        panedwindow.add(framel, weight=2)
         panedwindow.add(frame2, weight=2)
-        panedwindow.add(frame3, weight=4)
+        panedwindow.add(frame3, weight=2)
 
         # frame3 = ttk.Frame(panedwindow, width=50, height=400, relief=SUNKEN)
         # panedwindow.insert(1, frame3)
@@ -234,17 +296,29 @@ class Analyzer_App:
         default_txt = ""
         self.textbox.insert(END, default_txt)
 
+    def choose_color(self):
+        self.colorchooser_result = colorchooser.askcolor(initialcolor='#000000')
+        print(self.colorchooser_result)
+
     def generate(self):
-        textData = self.textbox.get("1.0", tk.END)
-        print(textData)
-        stopwords_wc = set(stopwords.words('english'))
-        max_words = 80
-        perform_WordCloud(textData, stopwords_wc, max_words, 'WordCloud.png', 'black', 700, 700)
+        self.textData = self.textbox.get("1.0", tk.END)
+        print(self.textData)
+        if len(self.textData) > 0:
+            stopwords_wc = set(stopwords.words('english'))
+            # self.max_words = self.max_words.get()
+            # print(self.max_words)
+            # print(type(self.colorchooser_result))
+            # print(self.colorchooser_result[-1])
+
+            imgfilename = self.folder_path + '/WordCloud.png'
+            # print(imgfilename)
+            perform_WordCloud(self.textData, stopwords_wc, self.max_words.get(), imgfilename,
+                              self.colorchooser_result[-1], self.varWidth.get(), self.varHeight.get())
 
     def open_file_dialog(self):
-        folder_path = filedialog.askdirectory()
-        if folder_path:
-            self.selected_file_label.config(text=f"{folder_path}")
+        self.folder_path = filedialog.askdirectory()
+        if  self.folder_path:
+            self.selected_file_label.config(text=f"{ self.folder_path}")
 
 
 # Press the green button in the gutter to run the script.
