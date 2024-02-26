@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import re
 
 import tkinter as tk
+# from tkinter import *
 from tkinter import filedialog
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
@@ -105,6 +106,7 @@ def textCleaning(texts, stoplist):
 
     return texts
 
+
 # Analyze word frequency
 def analyze_word_frequency(text_to_process, most_common):
     freq_dist = nltk.FreqDist()
@@ -145,6 +147,7 @@ def perform_WordCloud(text_to_process, stop_words, max_words, image_file_name, b
 class Analyzer_App:
     folder_path = ''
     text_content = ''
+
     def __init__(self, master):
         self.selected_file_label = None
         self.path_frame = None
@@ -154,11 +157,14 @@ class Analyzer_App:
         self.initialize_UI()
 
     def initialize_UI(self):
+        # Variables
+        # spam = tk.StringVar()
+
         styles = ttk.Style()
         # style applying to global
         styles.configure('.', font=('Helvetica', 18))
 
-        head_lbl = ttk.Label(root, text="Text Analyser", width=25, padding=15)
+        head_lbl = ttk.Label(text="Text Analyser", width=25, padding=15)
         head_lbl.config(font=('Courier', 35, 'bold'), foreground='yellow')
         head_lbl.pack()
 
@@ -185,6 +191,7 @@ class Analyzer_App:
 
         open_button = ttk.Button(path_row, text="Open File", command=self.open_file_dialog)
         open_button.pack(padx=20, pady=20)
+        # open_button.grid(row=0,column=0,columnspan = 2)
 
         generate_button = ttk.Button(path_row, text="Show Analysed Text", command=self.generate)
         generate_button.pack(padx=20, pady=20)
@@ -210,7 +217,7 @@ class Analyzer_App:
         self.textbox.insert(END, default_txt)
 
     def generate(self):
-        textData =  self.textbox.get("1.0", tk.END)
+        textData = self.textbox.get("1.0", tk.END)
         print(textData)
         stopwords_wc = set(stopwords.words('english'))
         max_words = 80
@@ -225,17 +232,22 @@ class Analyzer_App:
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     printing('**************************')
-    root = ttk.Window(themename="darkly", size=(1200, 1000), resizable=(True, True), title='Text Analyzer', )
+    appWidth = 900
+    appHeight = 900
+    # root = ttk.Window(themename="darkly", size=(800, 800), resizable=(True, True), title='Text Analyzer',
+    #                   maxsize = (1300, 1300),minsize=(appWidth, appHeight), position = (400, 400))
+    root = ttk.Window(themename="darkly", resizable=(True, True), title='Text Analyzer', minsize=(appWidth, appHeight))
+
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    x_position = int((screen_width / 2) - (appWidth / 2))
+    y_position = int((screen_height / 2) - (appHeight / 2))
+
+    pos = f'{appWidth}x{appHeight}' + f'+{x_position}+' + f'{y_position}'
+    # print(pos)
+    # root.geometry('200x150+400+300')
+    root.geometry(f'{pos}')
+
     app = Analyzer_App(root)
     root.mainloop()
-
-    # textData = """ India """
-    # stopwords_wc = set(stopwords.words('english'))
-    # max_words = 80
-    # perform_WordCloud(textData, stopwords_wc, max_words, 'WordCloud.png', 'black', 700, 700)
-
-# b1 = ttk.Button(root, text="Button 1", bootstyle=SUCCESS)
-# b1.pack(side=LEFT, padx=5, pady=10)
-#
-# b2 = ttk.Button(root, text="Button 2", bootstyle=(INFO, OUTLINE))
-# b2.pack(side=LEFT, padx=5, pady=10)
