@@ -15,7 +15,7 @@ from nltk.stem import WordNetLemmatizer
 import numpy as np
 import pandas as pd
 from os import path
-from PIL import Image
+from PIL import ImageTk, Image
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import matplotlib
 import matplotlib.pyplot as plt
@@ -28,6 +28,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter.scrolledtext import ScrolledText
 from tkinter import colorchooser
+from tkinter import messagebox
 
 
 def printing(name):
@@ -124,7 +125,8 @@ def analyze_word_frequency(text_to_process, most_common):
     # plt.show()
 
 
-def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name, background_color, heightt, widthh):
+def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name, background_color, heightt, widthh,
+                      freqWordCount):
     cleaned_Data = dataCleaning(text_to_process)
     # print(cleaned_Data)
 
@@ -137,7 +139,7 @@ def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name,
     cleaned_data_text = ' '.join(' '.join(map(str, i)) for i in cleaned_Txt)
     print(cleaned_data_text)
 
-    analyze_word_frequency(cleaned_data_text, 30)
+    analyze_word_frequency(cleaned_data_text, freqWordCount)
 
     # print(max_wordsss)
     # print(heightt)
@@ -151,6 +153,7 @@ def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name,
 
 
 class Analyzer_App:
+    global img
     folder_path = ''
     text_content = ''
     # tuple
@@ -163,12 +166,16 @@ class Analyzer_App:
         self.settings_frame = None
         self.content_frame = None
         self.textbox = None
+        self.canvas = None
+        self.colorchooser_output = None
         self.max_words = tk.IntVar()
-        self.varWidth = tk.IntVar()
-        self.varHeight = tk.IntVar()
+        # self.varWidth = tk.IntVar()
+        # self.varHeight = tk.IntVar()
+        self.var_Width_Height = tk.IntVar()
         self.varFrequency = tk.IntVar()
-        self.varWidth.set(700)
-        self.varHeight.set(700)
+        # self.varWidth.set(700)
+        # self.varHeight.set(700)
+        self.var_Width_Height.set(700)
         self.varFrequency.set(30)
         self.initialize_UI()
 
@@ -191,44 +198,47 @@ class Analyzer_App:
         self.settings_frame = ttk.Labelframe(settings_row, text=settings_frame_text, padding=15)
         self.settings_frame.pack(fill=BOTH, expand=YES, anchor=N)
 
-        max_words_lbl = ttk.Label(self.settings_frame, text="Words To Show")
-        max_words_lbl.config(font=('Courier', 22, 'bold'))
+        max_words_lbl = ttk.Label(self.settings_frame, text="Words To Show in image")
+        max_words_lbl.config(font=('Courier', 18, 'bold'))
         max_words_lbl.pack(side=LEFT, padx=10, pady=10)
+        max_words_lbl.config(wraplength=100)
 
-        self.max_words.set(50)
-        spinbox_max_words = Spinbox(self.settings_frame, from_=30, to=100, textvariable=self.max_words)
-        spinbox_max_words.config(font=('Courier', 24, 'bold'), width=10, foreground='yellow')
+        self.max_words.set(40)
+        spinbox_max_words = Spinbox(self.settings_frame, from_=30, to=100, increment=10, textvariable=self.max_words)
+        spinbox_max_words.config(font=('Courier', 24, 'bold'), width=3, foreground='yellow')
         spinbox_max_words.pack(side=LEFT, padx=10, pady=10)
 
-        img_height_lbl = ttk.Label(self.settings_frame, text="Height")
+        img_height_lbl = ttk.Label(self.settings_frame, text="Width  Height")
         img_height_lbl.config(font=('Courier', 22, 'bold'))
         img_height_lbl.pack(side=LEFT, padx=10, pady=10)
+        img_height_lbl.config(wraplength=100)
 
-        height_textbox = ttk.Entry(self.settings_frame, width=10, textvariable=self.varHeight)
-        height_textbox.config(font=('Courier', 22, 'bold'), foreground='yellow')
-        height_textbox.pack(side=LEFT, padx=10, pady=10)
+        self.var_Width_Height.set(650)
+        height_spinbox = Spinbox(self.settings_frame, from_=600, to=800, increment=50,
+                                 textvariable=self.var_Width_Height)
+        height_spinbox.config(font=('Courier', 24, 'bold'), width=4, foreground='yellow')
+        height_spinbox.pack(side=LEFT, padx=10, pady=10)
 
-        img_width_lbl = ttk.Label(self.settings_frame, text="Width")
-        img_width_lbl.config(font=('Courier', 22, 'bold'))
-        img_width_lbl.pack(side=LEFT, padx=10, pady=10)
+        frequency_lbl = ttk.Label(self.settings_frame, text="Frequent Words Count")
+        frequency_lbl.config(font=('Courier', 18, 'bold'))
+        frequency_lbl.pack(side=LEFT, padx=10, pady=10)
+        frequency_lbl.config(wraplength=100)
 
-        width_textbox = ttk.Entry(self.settings_frame, width=10, textvariable=self.varWidth)
-        width_textbox.config(font=('Courier', 22, 'bold'), foreground='yellow')
-        width_textbox.pack(side=LEFT, padx=10, pady=10)
+        self.varFrequency.set(20)
+        frequency_spinbox = Spinbox(self.settings_frame, from_=20, to=40, increment=5,
+                                    textvariable=self.varFrequency)
+        frequency_spinbox.config(font=('Courier', 24, 'bold'), width=3, foreground='yellow')
+        frequency_spinbox.pack(side=LEFT, padx=10, pady=10)
 
         styles.configure('ChooseColor.TButton', foreground='orange', font=('Helvetica', 23))
-        colorchooser_button = ttk.Button(self.settings_frame, style='ChooseColor.TButton', text="Choose Color", command=self.choose_color)
+        colorchooser_button = ttk.Button(self.settings_frame, style='ChooseColor.TButton', text="Choose Color",
+                                         command=self.choose_color)
         colorchooser_button.config()
         colorchooser_button.pack(side=LEFT, padx=10, pady=10)
 
-        frequency_lbl = ttk.Label(self.settings_frame, text="Show Word Frequency")
-        frequency_lbl.config(font=('Courier', 22, 'bold'))
-        frequency_lbl.pack(side=LEFT, padx=10, pady=10)
-
-        frequency_textbox = ttk.Entry(self.settings_frame, width=10, textvariable=self.varFrequency)
-        frequency_textbox.config(font=('Courier', 22, 'bold'), foreground='yellow')
-        frequency_textbox.pack(side=LEFT, padx=10, pady=10)
-
+        self.colorchooser_output = ttk.Canvas(self.settings_frame, width=50, height=50)
+        self.colorchooser_output.config(background='black')
+        self.colorchooser_output.pack(side=LEFT, padx=10, pady=10)
 
         path_row = ttk.Frame(root)
         path_row.pack(fill=BOTH, expand=YES)
@@ -270,17 +280,17 @@ class Analyzer_App:
         panedwindow.pack(fill=BOTH, expand=True)
         framel = ttk.Frame(panedwindow, width=10, height=300, relief=SUNKEN)
         frame2 = ttk.Frame(panedwindow, width=10, height=300, relief=SUNKEN)
-        frame3 = ttk.Frame(panedwindow, width=300, height=300, relief=SUNKEN)
-        panedwindow.add(framel, weight=2)
-        panedwindow.add(frame2, weight=2)
-        panedwindow.add(frame3, weight=2)
+        frame3 = ttk.Frame(panedwindow, width=350, height=300, relief=SUNKEN)
+        panedwindow.add(framel, weight=1)
+        panedwindow.add(frame2, weight=1)
+        panedwindow.add(frame3, weight=3)
 
         # frame3 = ttk.Frame(panedwindow, width=50, height=400, relief=SUNKEN)
         # panedwindow.insert(1, frame3)
 
         style = ttk.Style()
 
-        content_frame_text = 'Please paste the text / paragraph to process below'
+        content_frame_text = 'Paste paragraph below'
         self.content_frame = ttk.Labelframe(framel, text=content_frame_text, padding=15)
         self.content_frame.pack(fill=X, expand=YES, anchor=N)
 
@@ -296,14 +306,48 @@ class Analyzer_App:
         default_txt = ""
         self.textbox.insert(END, default_txt)
 
+        tabBar = ttk.Notebook(frame3)
+        tabBar.pack()
+
+        frame11 = ttk.Frame(tabBar)
+        frame22 = ttk.Frame(tabBar)
+        tabBar.add(frame11, text='Image')
+        tabBar.add(frame22, text='Chart')
+
+        # frame33 = ttk.Frame(tabBar)
+        # tabBar.insert(1, frame33, text='Three')
+        # tabBar.forget(1)
+        # tabBar.add(frame33, text='Three')
+        # tabBar.select(1)
+        tabBar.select()
+
+        # imgfilename = self.folder_path + '/WordCloud.png'
+        # self.canvas = ttk.Canvas(frame11, width=300, height=300)
+        # self.canvas.pack()
+        # img = ImageTk.PhotoImage(Image.open(imgfilename))
+        # canvas.create_image(20, 20, anchor=NW, image=img)
+
+        self.canvas = ttk.Canvas(frame11, width=self.var_Width_Height.get() + 170,
+                                 height=self.var_Width_Height.get() + 170)
+        self.canvas.pack(fill=BOTH, expand=YES)
+
+        # create a scrollbar widget and set its command to the text widget
+        # scrollbar = ttk.Scrollbar(root, orient='vertical', command = self.canvas.yview)
+        # scrollbar.grid(row=0, column=1, sticky=tk.NS)
+
+        # scrollbar = ttk.Scrollbar(frame11, orient=VERTICAL)
+        # scrollbar.pack(fill=BOTH, expand=YES)
+
     def choose_color(self):
         self.colorchooser_result = colorchooser.askcolor(initialcolor='#000000')
+        self.colorchooser_output.config(background=self.colorchooser_result[-1])
         print(self.colorchooser_result)
 
     def generate(self):
         self.textData = self.textbox.get("1.0", tk.END)
-        print(self.textData)
-        if len(self.textData) > 0:
+        # print(self.textData)
+
+        if self.validateFields():
             stopwords_wc = set(stopwords.words('english'))
             # self.max_words = self.max_words.get()
             # print(self.max_words)
@@ -312,19 +356,45 @@ class Analyzer_App:
 
             imgfilename = self.folder_path + '/WordCloud.png'
             # print(imgfilename)
+
             perform_WordCloud(self.textData, stopwords_wc, self.max_words.get(), imgfilename,
-                              self.colorchooser_result[-1], self.varWidth.get(), self.varHeight.get())
+                              self.colorchooser_result[-1], self.var_Width_Height.get(), self.var_Width_Height.get(),
+                              self.varFrequency.get())
+
+            img_file_name = self.folder_path + '/WordCloud.png'
+            print(img_file_name)
+            self.img = ImageTk.PhotoImage(Image.open(img_file_name))
+            self.canvas.create_image(10, 10, anchor=NW, image=self.img)
+            self.canvas.image = self.img
+
+            # imgfilename = self.folder_path + '/WordCloud.png'
+            # print(imgfilename)
+            # img = ImageTk.PhotoImage(Image.open(imgfilename))
+            # self.canvas.create_image(400, 400, anchor=NW, image=img)
+            # self.canvas.image = img
+
+    def validateFields(self):
+        # if len(self.textData.strip) <= 0:
+        #     messagebox.showinfo(title='Empty content', message='Please paste a paragraph')
+        #     return False
+        # if len(self.imgfilename.strip) <= 0:
+        #     return False
+        # if len(self.textData.strip) <= 0:
+        #     return False
+        # if len(self.textData.strip) <= 0:
+        #     return False
+        return True
 
     def open_file_dialog(self):
         self.folder_path = filedialog.askdirectory()
-        if  self.folder_path:
-            self.selected_file_label.config(text=f"{ self.folder_path}")
+        if self.folder_path:
+            self.selected_file_label.config(text=f"{self.folder_path}")
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     printing('**************************')
-    appWidth = 1600
+    appWidth = 1200
     appHeight = 1000
     # root = ttk.Window(themename="darkly", size=(800, 800), resizable=(True, True), title='Text Analyzer',
     #                   maxsize = (1300, 1300),minsize=(appWidth, appHeight), position = (400, 400))
