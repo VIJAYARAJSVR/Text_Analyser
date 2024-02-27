@@ -194,9 +194,9 @@ class Analyzer_App:
         styles = ttk.Style()
         styles.configure('.', font=('Helvetica', 18))
 
-        head_lbl = ttk.Label(text="Text Analyser", width=25, padding=15)
-        head_lbl.config(font=('Courier', 35, 'bold'), foreground='yellow')
-        head_lbl.pack()
+        # head_lbl = ttk.Label(text="Text Analyser", width=25, padding=15)
+        # head_lbl.config(font=('Courier', 35, 'bold'), foreground='yellow')
+        # head_lbl.pack()
 
         settings_row = ttk.Frame(root)
         settings_row.pack(fill=BOTH, expand=YES)
@@ -204,6 +204,12 @@ class Analyzer_App:
         settings_frame_text = 'WordCloud Settings'
         self.settings_frame = ttk.Labelframe(settings_row, text=settings_frame_text, padding=15)
         self.settings_frame.pack(fill=BOTH, expand=YES, anchor=N)
+
+        shortcut_lbl = ttk.Label(self.settings_frame, text="use keyboard to change the below values.")
+        shortcut_lbl.config(foreground='blue', background='yellow')
+        shortcut_lbl.config(font=('Courier', 15, 'bold'))
+        shortcut_lbl.pack(padx=5, pady=5, side=TOP)
+        # shortcut_lbl.config(wraplength=300)
 
         max_words_lbl = ttk.Label(self.settings_frame, text="Words To Show in image")
         max_words_lbl.config(font=('Courier', 18, 'bold'))
@@ -292,23 +298,6 @@ class Analyzer_App:
         open_button = ttk.Button(self.path_frame, text="Select a Folder", command=self.open_file_dialog)
         open_button.pack(side=RIGHT, padx=10, pady=5)
 
-        # shortcut_lbl = ttk.Label(self.path_frame, text="Select\nFolder: command+O", width=17)
-        # shortcut_lbl.config(foreground='blue', background='yellow')
-        # shortcut_lbl.config(font=('Courier', 18, 'bold'))
-        # shortcut_lbl.pack(padx=5, pady=5, side=TOP)
-        # shortcut_lbl.config(wraplength=600)
-        #
-        # shortcut_lbl = ttk.Label(self.path_frame, text="Analyse\nButton: command+G", width=17)
-        # shortcut_lbl.config(foreground='blue', background='yellow')
-        # shortcut_lbl.config(font=('Courier', 18, 'bold'))
-        # shortcut_lbl.pack(padx=5, pady=5, side=TOP)
-        # shortcut_lbl.config(wraplength=300)
-
-
-
-        # open_button.grid(row=0,column=2)
-
-        # generate_button.grid(row=1, column=1)
 
         # —————————————————————————————ui———————————————-
 
@@ -329,6 +318,12 @@ class Analyzer_App:
         content_frame_text = 'Paste paragraph below'
         self.content_frame = ttk.Labelframe(framel, text=content_frame_text, padding=15)
         self.content_frame.pack(fill=X, expand=YES, anchor=N)
+
+        shortcut_lbl = ttk.Label(self.content_frame, text="cmd+P", width=5)
+        shortcut_lbl.config(foreground='blue', background='yellow')
+        shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        shortcut_lbl.pack(padx=5, pady=5, side=TOP)
+        shortcut_lbl.config(wraplength=300)
 
         self.textbox = ScrolledText(
             width=10, height=400,
