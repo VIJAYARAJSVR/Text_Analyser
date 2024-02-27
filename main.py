@@ -117,16 +117,17 @@ def analyze_word_frequency(text_to_process, most_common):
     for word in word_tokenize(text_to_process):
         freq_dist[word.lower()] += 1
 
-    for freq in freq_dist.most_common(most_common):
+    common_words = freq_dist.most_common(most_common)
+    for freq in common_words:
         print(freq)
 
+    return common_words
     # plt.figure(figsize=(12, 6))
     # freq_dist.plot(50)
     # plt.show()
 
 
-def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name, background_color, heightt, widthh,
-                      freqWordCount):
+def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name, background_color, heightt, widthh):
     cleaned_Data = dataCleaning(text_to_process)
     # print(cleaned_Data)
 
@@ -139,7 +140,7 @@ def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name,
     cleaned_data_text = ' '.join(' '.join(map(str, i)) for i in cleaned_Txt)
     print(cleaned_data_text)
 
-    analyze_word_frequency(cleaned_data_text, freqWordCount)
+    # analyze_word_frequency(cleaned_data_text, freqWordCount)
 
     # print(max_wordsss)
     # print(heightt)
@@ -150,6 +151,7 @@ def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name,
                           height=heightt, width=widthh).generate(cleaned_data_text)
     wordcloud.generate(cleaned_data_text)
     wordcloud.to_file(image_file_name)
+    return cleaned_data_text
 
 
 class Analyzer_App:
@@ -165,6 +167,7 @@ class Analyzer_App:
         self.path_frame = None
         self.settings_frame = None
         self.content_frame = None
+        self.frame2 = None
         self.textbox = None
         self.canvas = None
         self.colorchooser_output = None
@@ -181,7 +184,11 @@ class Analyzer_App:
 
     def initialize_UI(self):
         # Variables
-        # spam = tk.StringVar()
+
+        root.bind('<Command-g>', lambda event: self.generate())
+        root.bind('<Command-o>', lambda event: self.open_file_dialog())
+        root.bind('<Command-p>', lambda event: self.clear_paste())
+        root.bind('<Command-r>', lambda event: self.choose_color())
 
         # style applying to global
         styles = ttk.Style()
@@ -238,7 +245,15 @@ class Analyzer_App:
 
         self.colorchooser_output = ttk.Canvas(self.settings_frame, width=50, height=50)
         self.colorchooser_output.config(background='black')
-        self.colorchooser_output.pack(side=LEFT, padx=10, pady=10)
+        self.colorchooser_output.pack(side=LEFT, padx=5, pady=5)
+
+        shortcut_lbl = ttk.Label(self.settings_frame, text="cmd+R", width=5)
+        shortcut_lbl.config(foreground='blue', background='yellow')
+        shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        shortcut_lbl.pack(padx=5, pady=5, side=LEFT)
+        shortcut_lbl.config(wraplength=300)
+
+
 
         path_row = ttk.Frame(root)
         path_row.pack(fill=BOTH, expand=YES)
@@ -249,27 +264,48 @@ class Analyzer_App:
         self.path_frame = ttk.Labelframe(path_row, text=path_frame_text, padding=15)
         self.path_frame.pack(fill=BOTH, expand=YES, anchor=N)
 
-        path_lbl = ttk.Label(self.path_frame, text="Selected Folder Path :", width=25)
-        # path_lbl.config(foreground='blue', background='yellow')
-        path_lbl.config(font=('Courier', 18, 'bold'))
-        path_lbl.pack(side=LEFT, padx=10, pady=10)
-        # path_lbl.grid(row=0, column=0)
+
 
         self.selected_file_label = ttk.Label(self.path_frame, text="")
         self.folder_path = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
         self.selected_file_label.config(text=f"{self.folder_path}")
         self.selected_file_label.config(foreground='yellow')
         self.selected_file_label.config(font=('Courier', 25, 'bold'))
-        self.selected_file_label.pack(side=LEFT, padx=10, pady=10)
+        self.selected_file_label.pack(side=LEFT, padx=10, pady=5)
         self.selected_file_label.config(wraplength=600)
+
+
+        shortcut_row = ttk.Frame(self.path_frame)
+        shortcut_row.pack(side=RIGHT)
+
+        shortcut_lbl = ttk.Label(shortcut_row, text="cmd+O\ncmd+G", width=5)
+        shortcut_lbl.config(foreground='blue', background='yellow')
+        shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        shortcut_lbl.pack(padx=5, pady=5, side=TOP)
+        shortcut_lbl.config(wraplength=300)
 
         # self.selected_file_label.grid(row=0, column=1)
         styles.configure('analyse.TButton', foreground='orange', font=('Helvetica', 30))
         generate_button = ttk.Button(self.path_frame, style='analyse.TButton', text="Analyze", command=self.generate)
-        generate_button.pack(side=RIGHT, padx=10, pady=10)
+        generate_button.pack(side=RIGHT, padx=10, pady=5)
 
-        open_button = ttk.Button(self.path_frame, text="Open File", command=self.open_file_dialog)
-        open_button.pack(side=RIGHT, padx=10, pady=10)
+        open_button = ttk.Button(self.path_frame, text="Select a Folder", command=self.open_file_dialog)
+        open_button.pack(side=RIGHT, padx=10, pady=5)
+
+        # shortcut_lbl = ttk.Label(self.path_frame, text="Select\nFolder: command+O", width=17)
+        # shortcut_lbl.config(foreground='blue', background='yellow')
+        # shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        # shortcut_lbl.pack(padx=5, pady=5, side=TOP)
+        # shortcut_lbl.config(wraplength=600)
+        #
+        # shortcut_lbl = ttk.Label(self.path_frame, text="Analyse\nButton: command+G", width=17)
+        # shortcut_lbl.config(foreground='blue', background='yellow')
+        # shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        # shortcut_lbl.pack(padx=5, pady=5, side=TOP)
+        # shortcut_lbl.config(wraplength=300)
+
+
+
         # open_button.grid(row=0,column=2)
 
         # generate_button.grid(row=1, column=1)
@@ -279,10 +315,10 @@ class Analyzer_App:
         panedwindow = ttk.Panedwindow(root, orient=HORIZONTAL)
         panedwindow.pack(fill=BOTH, expand=True)
         framel = ttk.Frame(panedwindow, width=10, height=300, relief=SUNKEN)
-        frame2 = ttk.Frame(panedwindow, width=10, height=300, relief=SUNKEN)
+        self.frame2 = ttk.Frame(panedwindow, width=10, height=300, relief=SUNKEN)
         frame3 = ttk.Frame(panedwindow, width=350, height=300, relief=SUNKEN)
         panedwindow.add(framel, weight=1)
-        panedwindow.add(frame2, weight=1)
+        panedwindow.add(self.frame2, weight=1)
         panedwindow.add(frame3, weight=3)
 
         # frame3 = ttk.Frame(panedwindow, width=50, height=400, relief=SUNKEN)
@@ -306,21 +342,6 @@ class Analyzer_App:
         default_txt = ""
         self.textbox.insert(END, default_txt)
 
-        # frequency_lbl = ttk.Label(self.settings_frame, text="Frequent Words Count")
-        # frequency_lbl.config(font=('Courier', 18, 'bold'))
-        # frequency_lbl.pack(side=LEFT, padx=10, pady=10)
-        # frequency_lbl.config(wraplength=100)
-
-        rows = []
-        for i in range(20):
-            cols = []
-            for j in range(2):
-                e = ttk.Label(frame2, text="Frequent")
-                e.grid(row=i, column=j, sticky=NSEW)
-                # e.insert(END, '%d.%d' % (i, j))
-                cols.append(e)
-            rows.append(cols)
-
         tabBar = ttk.Notebook(frame3)
         tabBar.pack()
 
@@ -329,18 +350,7 @@ class Analyzer_App:
         tabBar.add(frame11, text='Image')
         tabBar.add(frame22, text='Chart')
 
-        # frame33 = ttk.Frame(tabBar)
-        # tabBar.insert(1, frame33, text='Three')
-        # tabBar.forget(1)
-        # tabBar.add(frame33, text='Three')
-        # tabBar.select(1)
         tabBar.select()
-
-        # imgfilename = self.folder_path + '/WordCloud.png'
-        # self.canvas = ttk.Canvas(frame11, width=300, height=300)
-        # self.canvas.pack()
-        # img = ImageTk.PhotoImage(Image.open(imgfilename))
-        # canvas.create_image(20, 20, anchor=NW, image=img)
 
         self.canvas = ttk.Canvas(frame11, width=self.var_Width_Height.get() + 170,
                                  height=self.var_Width_Height.get() + 170)
@@ -372,9 +382,10 @@ class Analyzer_App:
             imgfilename = self.folder_path + '/WordCloud.png'
             # print(imgfilename)
 
-            perform_WordCloud(self.textData, stopwords_wc, self.max_words.get(), imgfilename,
-                              self.colorchooser_result[-1], self.var_Width_Height.get(), self.var_Width_Height.get(),
-                              self.varFrequency.get())
+            cleaned_data_text = perform_WordCloud(self.textData, stopwords_wc, self.max_words.get(), imgfilename,
+                                                  self.colorchooser_result[-1], self.var_Width_Height.get(),
+                                                  self.var_Width_Height.get()
+                                                  )
 
             img_file_name = self.folder_path + '/WordCloud.png'
             print(img_file_name)
@@ -382,11 +393,46 @@ class Analyzer_App:
             self.canvas.create_image(10, 10, anchor=NW, image=self.img)
             self.canvas.image = self.img
 
-            # imgfilename = self.folder_path + '/WordCloud.png'
-            # print(imgfilename)
-            # img = ImageTk.PhotoImage(Image.open(imgfilename))
-            # self.canvas.create_image(400, 400, anchor=NW, image=img)
-            # self.canvas.image = img
+            common_words_tuple = analyze_word_frequency(cleaned_data_text, self.varFrequency.get())
+
+            # create a scrollbar widget and set its command to the text widget
+            # scrollbar = ttk.Scrollbar(root, orient='vertical', command = self.canvas.yview)
+            # scrollbar.grid(row=0, column=1, sticky=tk.NS)
+
+            # scrollbar = ttk.Scrollbar(frame11, orient=VERTICAL)
+            # scrollbar.pack(fill=BOTH, expand=YES)
+
+            # scrollbar = ttk.Scrollbar(self.frame2, orient='vertical', command=self.frame2)
+            # scrollbar.pack(fill=BOTH, expand=YES)
+
+            # textbox1 = ScrolledText(
+            #     width=10, height=400,
+            #     master=self.frame2,
+            #     highlightcolor='blue',
+            #     highlightbackground='white',
+            #     highlightthickness=1)
+            # textbox1.pack(fill=BOTH)
+            # textbox1.config(font=('Courier', 25, 'normal'))
+
+            rows = []
+            for rrow in range(self.varFrequency.get()):
+                cols = []
+                for ccolumn in range(2):
+                    if ccolumn == 0:
+                        vall = common_words_tuple[rrow]
+                        word_entry = ttk.Entry(self.frame2, width=9, font='Arial 30')
+                        word_entry.grid(row=rrow, column=ccolumn, sticky=NSEW)
+                        word_entry.insert(END, (vall[0]))
+                        cols.append(word_entry)
+                        rows.append(cols)
+
+                    else:
+                        vall = common_words_tuple[rrow]
+                        count_lbl = ttk.Label(self.frame2, text=vall[-1], width=10, font='Arial 25')
+                        # count_lbl.config(padx=5)
+                        count_lbl.grid(row=rrow, column=ccolumn, sticky=NSEW)
+                        cols.append(count_lbl)
+                        rows.append(cols)
 
     def validateFields(self):
         # if len(self.textData.strip) <= 0:
@@ -399,6 +445,17 @@ class Analyzer_App:
         # if len(self.textData.strip) <= 0:
         #     return False
         return True
+
+    def clear_paste(self):
+        print('clearing')
+        self.textbox.delete('1.0', 'end')
+        self.textbox.focus()
+        # Get the data from the clipboard
+        cliptext = root.clipboard_get()
+        self.textbox.insert(END, cliptext)
+
+        # self.textbox.insert('')
+        # entry.bind('<<Paste>>', lambda e: print('Paste'))
 
     def open_file_dialog(self):
         self.folder_path = filedialog.askdirectory()
