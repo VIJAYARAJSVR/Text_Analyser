@@ -211,9 +211,19 @@ class Analyzer_App:
     colorchooser_result = ((0, 0, 0), '#000000')
 
     def __init__(self, master):
+        self.appWidth1 = 600
+        self.appHeight1 = 600
+        self.tabBar = None
         self.stoplist = None
         self.stoplist = stopwords.words('english')
+        self.arr_stop_words = ["indian", "Ocean", "permission", "another","indian", "Ocean", "permission", "another","indian", "Ocean", "permission", "another","indian", "Ocean", "permission", "another","indian", "Ocean", "permission", "another"]
         # stoplist.append("india")
+
+        # screen_width = root.winfo_screenwidth()
+        # screen_height = root.winfo_screenheight()
+
+        self.x_position = int((screen_width / 2) - (self.appWidth1 / 2))
+        self.y_position = int((screen_height / 2) - (self.appHeight1 / 2))
 
         self.textData = ''
         self.selected_file_label = None
@@ -229,13 +239,11 @@ class Analyzer_App:
         self.scrollx = None
         self.colorchooser_output = None
         self.max_words = tk.IntVar()
-        # self.varWidth = tk.IntVar()
-        # self.varHeight = tk.IntVar()
+
         self.var_Width_Height = tk.IntVar()
         self.varFrequency = tk.IntVar()
         self.varWord_toRemove_haveLength = tk.IntVar()
-        # self.varWidth.set(700)
-        # self.varHeight.set(700)
+
         self.var_Width_Height.set(700)
         self.varFrequency.set(30)
         self.initialize_UI()
@@ -247,6 +255,9 @@ class Analyzer_App:
         root.bind('<Command-o>', lambda event: self.open_file_dialog())
         root.bind('<Command-p>', lambda event: self.clear_paste())
         root.bind('<Command-r>', lambda event: self.choose_color())
+        root.bind('<Command-i>', lambda event: self.show_image())
+        root.bind('<Command-t>', lambda event: self.show_chart())
+        root.bind('<Command-s>', lambda event: self.show_stop_words())
 
         # style applying to global
         styles = ttk.Style()
@@ -263,11 +274,25 @@ class Analyzer_App:
         self.settings_frame = ttk.Labelframe(settings_row, text=settings_frame_text, padding=15)
         self.settings_frame.pack(fill=BOTH, expand=YES, anchor=N)
 
-        shortcut_lbl = ttk.Label(self.settings_frame, text="use keyboard to change the below values.")
+        info_frame = ttk.Frame(self.settings_frame)
+        info_frame.pack(fill=X, expand=YES)
+        shortcut_lbl = ttk.Label(info_frame, text="use keyboard to change the below values.")
         shortcut_lbl.config(foreground='blue', background='yellow')
         shortcut_lbl.config(font=('Courier', 15, 'bold'))
-        shortcut_lbl.pack(padx=5, pady=5, side=TOP)
+        shortcut_lbl.pack(padx=5, pady=5, side=LEFT)
         # shortcut_lbl.config(wraplength=300)
+
+        shortcut_lbl = ttk.Label(info_frame, text="cmd+S", width=5)
+        shortcut_lbl.config(foreground='blue', background='yellow')
+        shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        shortcut_lbl.pack(padx=5, pady=5, side=RIGHT)
+        shortcut_lbl.config(wraplength=300)
+
+        shortcut_lbl = ttk.Label(info_frame, text="cmd+R", width=5)
+        shortcut_lbl.config(foreground='blue', background='yellow')
+        shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        shortcut_lbl.pack(padx=5, pady=5, side=RIGHT)
+        shortcut_lbl.config(wraplength=300)
 
         max_words_lbl = ttk.Label(self.settings_frame, text="Words To Show in image")
         max_words_lbl.config(font=('Courier', 18, 'bold'))
@@ -312,7 +337,7 @@ class Analyzer_App:
         word_remove_spinbox.config(font=('Courier', 24, 'bold'), width=2, foreground='yellow')
         word_remove_spinbox.pack(side=LEFT, padx=10, pady=10)
 
-        styles.configure('ChooseColor.TButton', foreground='orange', font=('Helvetica', 22))
+        styles.configure('ChooseColor.TButton', foreground='orange', font=('Helvetica', 20))
         colorchooser_button = ttk.Button(self.settings_frame, style='ChooseColor.TButton', text="Choose Color",
                                          command=self.choose_color)
         colorchooser_button.config()
@@ -322,11 +347,14 @@ class Analyzer_App:
         self.colorchooser_output.config(background='black')
         self.colorchooser_output.pack(side=LEFT, padx=5, pady=5)
 
-        shortcut_lbl = ttk.Label(self.settings_frame, text="cmd+R", width=5)
-        shortcut_lbl.config(foreground='blue', background='yellow')
-        shortcut_lbl.config(font=('Courier', 18, 'bold'))
-        shortcut_lbl.pack(padx=5, pady=5, side=LEFT)
-        shortcut_lbl.config(wraplength=300)
+        show_stop_button = ttk.Button(self.settings_frame, text="Stop\nWords", command=self.show_stop_words)
+        show_stop_button.pack(side=LEFT, padx=10, pady=5)
+
+        # shortcut_lbl = ttk.Label(self.settings_frame, text="cmd+R", width=5)
+        # shortcut_lbl.config(foreground='blue', background='yellow')
+        # shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        # shortcut_lbl.pack(padx=5, pady=5, side=LEFT)
+        # shortcut_lbl.config(wraplength=300)
 
         path_row = ttk.Frame(root)
         path_row.pack(fill=BOTH, expand=YES)
@@ -407,15 +435,29 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
 
         self.textbox.insert(END, default_txt)
 
-        tabBar = ttk.Notebook(frame3)
-        tabBar.pack()
+        short_frame = ttk.Frame(frame3)
+        short_frame.pack(fill=X, expand=YES)
+        shortcut_lbl = ttk.Label(short_frame, text="cmd+I", width=5)
+        shortcut_lbl.config(foreground='blue', background='yellow')
+        shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        shortcut_lbl.pack(padx=5, pady=5, side=LEFT)
+        shortcut_lbl.config(wraplength=300)
 
-        frame11 = ttk.Frame(tabBar)
-        frame22 = ttk.Frame(tabBar)
-        tabBar.add(frame11, text='Image')
-        tabBar.add(frame22, text='Chart')
+        shortcut_lbl = ttk.Label(short_frame, text="cmd+T", width=5)
+        shortcut_lbl.config(foreground='blue', background='yellow')
+        shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        shortcut_lbl.pack(padx=5, pady=5, side=LEFT)
+        shortcut_lbl.config(wraplength=300)
 
-        tabBar.select()
+        self.tabBar = ttk.Notebook(frame3)
+        self.tabBar.pack()
+
+        frame11 = ttk.Frame(self.tabBar)
+        frame22 = ttk.Frame(self.tabBar)
+        self.tabBar.add(frame11, text='Image')
+        self.tabBar.add(frame22, text='Chart')
+
+        self.tabBar.select()
 
         self.canvas = ttk.Canvas(frame11, width=self.var_Width_Height.get() + 170,
                                  height=self.var_Width_Height.get() + 170)
@@ -432,6 +474,70 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
         self.colorchooser_result = colorchooser.askcolor(initialcolor='#000000')
         self.colorchooser_output.config(background=self.colorchooser_result[-1])
         print(self.colorchooser_result)
+
+    def show_image(self):
+        self.tabBar.select(0)
+        print("show_image clicked")
+
+    def show_stop_words(self):
+        window = ttk.Toplevel(self)
+        window.resizable()
+        window.title('Stop Words')
+        position = f'{self.appWidth1}x{self.appHeight1}' + f'+{self.x_position}+' + f'{self.y_position}'
+
+        window.geometry(f'{position}')
+
+        add_frame = ttk.Frame(window)
+        add_frame.pack()
+        new_stop_words_textbox = ttk.Entry(add_frame)
+        # new_stop_words_textbox.grid(row=0, column=0, padx=5, pady=5)
+        new_stop_words_textbox.pack(padx=5, pady=5, side=LEFT)
+        add_stop_words_button = ttk.Button(add_frame, text="Add Stop Words")
+        # add_stop_words_button.grid(row=0, column=1, padx=5, pady=5, stick='nsew')
+        add_stop_words_button.pack(padx=5, pady=5, side=LEFT)
+
+        # mainframe to make a scrollable window
+        self.mainframe1 = VerticalScrolledFrame(window)
+        # self.mainframe1.grid(row=1, column=0, columnspan=2)
+        self.mainframe1.pack(fill=BOTH, expand=1)
+
+        # create a notebook
+        self.TNotebook_Overview1 = ttk.Notebook(self.mainframe1.interior)
+        # self.TNotebook_Overview1.grid(row=1, column=0, columnspan=2, sticky="nsew")
+        # self.TNotebook_Overview1.configure(takefocus="")
+        self.TNotebook_Overview1.pack(fill=BOTH, expand=1)
+
+        self.Frame_Overview1 = ttk.Frame(self.TNotebook_Overview1)
+
+        self.TNotebook_Overview1.add(self.Frame_Overview1)
+        self.TNotebook_Overview1.tab(0, text="Common Words", compound="left", underline="-1", )
+
+
+
+        rows = []
+        for rrow in range(len(self.arr_stop_words)):
+            cols = []
+            for ccolumn in range(2):
+                if ccolumn == 0:
+                    vall = self.arr_stop_words[rrow]
+                    count_lbl = ttk.Label(self.Frame_Overview1, text=vall, width=10, font='Arial 25')
+                    count_lbl.grid(row=rrow, column=ccolumn)
+                    cols.append(count_lbl)
+                    rows.append(cols)
+                else:
+                    delete_button = ttk.Button(self.Frame_Overview1, text="Delete", command=self.delete_stop_word)
+                    # delete_button.pack(side=LEFT, padx=10, pady=5)
+                    delete_button.grid(row=rrow, column=ccolumn)
+                    cols.append(delete_button)
+                    rows.append(cols)
+
+    def delete_stop_word(self):
+
+        print("delete_stop_word clicked")
+
+    def show_chart(self):
+        self.tabBar.select(1)
+        print("show_chart clicked")
 
     def generate(self):
         self.textData = self.textbox.get("1.0", tk.END)
@@ -470,7 +576,7 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
 
             # mainframe to make a scrollable window
             self.mainframe = VerticalScrolledFrame(self.frame2)
-            self.mainframe.grid(row=0, column=0)
+            # self.mainframe.grid(row=0, column=0)
             self.mainframe.pack(fill=BOTH, expand=1)
 
             # create a notebook
