@@ -215,7 +215,7 @@ class Analyzer_App:
         self.appWidth1 = 600
         self.appHeight1 = 600
         self.tabBar = None
-        self.stoplist = None
+        # self.stoplist = None
         self.stoplist = stopwords.words('english')
         self.arr_stop_words = ["something is better than", "Ocean", "permission", "another", "indian", "Ocean",
                                "permission", "another", "indian", "Ocean", "permission", "another", "indian", "Ocean",
@@ -529,9 +529,10 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
                     cols.append(count_lbl)
                     rows.append(cols)
                 else:
-                    delete_button = ttk.Button(self.Frame_Overview1, text="Delete",
+                    delete_button = ttk.Button(self.Frame_Overview1, text="Delete", bootstyle=DANGER,
                                                command=lambda m=rrow: self.delete_stop_word(m))
                     delete_button.grid(row=rrow, column=ccolumn, padx=10, pady=10)
+
                     cols.append(delete_button)
                     rows.append(cols)
 
@@ -543,6 +544,7 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
 
     def add_stop_words(self):
         self.arr_stop_words.append(self.varNewStopWords.get())
+        self.stoplist.append(self.varNewStopWords.get())
         print(len(self.arr_stop_words))
         self.varNewStopWords.set('')
         self.refresh_stop_words_List()
@@ -553,6 +555,7 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
 
     def delete_stop_word(self, arr_index):
         self.arr_stop_words.remove(self.arr_stop_words[arr_index])
+        self.stoplist.remove(self.arr_stop_words[arr_index])
         print(len(self.arr_stop_words))
         self.refresh_stop_words_List()
 
