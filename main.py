@@ -80,7 +80,7 @@ def dataCleaning(textToProcess):
 
 
 # Text cleaning and tokenization using function
-def textCleaning(texts, stoplist):
+def textCleaning(texts, stoplist, word_toRemove_haveLength):
     # Remove numbers and alphanumerical words we don't need
     texts = [re.sub("[^a-zA-Z]+", " ", str(text)) for text in texts]
     # print('after Remove numbers and alphanumerical words we donot need')
@@ -103,7 +103,7 @@ def textCleaning(texts, stoplist):
     # print(texts)
 
     # Remove short words less than 3 letters in length
-    texts = [[word for word in tokens if len(word) >= 3] for tokens in texts]
+    texts = [[word for word in tokens if len(word) >= word_toRemove_haveLength] for tokens in texts]
     # print('after Remove short words less than 3 letters in length')
     # type(texts)
 
@@ -127,13 +127,14 @@ def analyze_word_frequency(text_to_process, most_common):
     # plt.show()
 
 
-def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name, background_color, heightt, widthh):
+def perform_WordCloud(text_to_process, stoplist, max_wordsss, Word_toRemove_haveLength, image_file_name,
+                      background_color, heightt, widthh):
     cleaned_Data = dataCleaning(text_to_process)
     # print(cleaned_Data)
 
-    stoplist = stopwords.words('english')
-    stoplist.append("india")
-    cleaned_Txt = textCleaning(cleaned_Data, stoplist)
+    # stoplist = stopwords.words('english')
+    # stoplist.append("india")
+    cleaned_Txt = textCleaning(cleaned_Data, stoplist, Word_toRemove_haveLength)
     # print(cleaned_Txt)
 
     # converting 2-D Array into single String
@@ -146,7 +147,7 @@ def perform_WordCloud(text_to_process, stop_words, max_wordsss, image_file_name,
     # print(heightt)
     # print(widthh)
 
-    wordcloud = WordCloud(max_words=max_wordsss, stopwords=stop_words, random_state=1,
+    wordcloud = WordCloud(max_words=max_wordsss, stopwords=stoplist, random_state=1,
                           background_color=background_color,
                           height=heightt, width=widthh).generate(cleaned_data_text)
     wordcloud.generate(cleaned_data_text)
@@ -210,6 +211,10 @@ class Analyzer_App:
     colorchooser_result = ((0, 0, 0), '#000000')
 
     def __init__(self, master):
+        self.stoplist = None
+        self.stoplist = stopwords.words('english')
+        # stoplist.append("india")
+
         self.textData = ''
         self.selected_file_label = None
         self.path_frame = None
@@ -228,6 +233,7 @@ class Analyzer_App:
         # self.varHeight = tk.IntVar()
         self.var_Width_Height = tk.IntVar()
         self.varFrequency = tk.IntVar()
+        self.varWord_toRemove_haveLength = tk.IntVar()
         # self.varWidth.set(700)
         # self.varHeight.set(700)
         self.var_Width_Height.set(700)
@@ -278,7 +284,7 @@ class Analyzer_App:
         img_height_lbl.pack(side=LEFT, padx=10, pady=10)
         img_height_lbl.config(wraplength=100)
 
-        self.var_Width_Height.set(650)
+        self.var_Width_Height.set(700)
         height_spinbox = Spinbox(self.settings_frame, from_=600, to=800, increment=50,
                                  textvariable=self.var_Width_Height)
         height_spinbox.config(font=('Courier', 24, 'bold'), width=4, foreground='yellow')
@@ -295,7 +301,18 @@ class Analyzer_App:
         frequency_spinbox.config(font=('Courier', 24, 'bold'), width=3, foreground='yellow')
         frequency_spinbox.pack(side=LEFT, padx=10, pady=10)
 
-        styles.configure('ChooseColor.TButton', foreground='orange', font=('Helvetica', 23))
+        word_remove_lbl = ttk.Label(self.settings_frame, text="Words To Remove <")
+        word_remove_lbl.config(font=('Courier', 18, 'bold'))
+        word_remove_lbl.pack(side=LEFT, padx=10, pady=10)
+        word_remove_lbl.config(wraplength=100)
+
+        self.varWord_toRemove_haveLength.set(3)
+        word_remove_spinbox = Spinbox(self.settings_frame, from_=2, to=5, increment=1,
+                                      textvariable=self.varWord_toRemove_haveLength)
+        word_remove_spinbox.config(font=('Courier', 24, 'bold'), width=2, foreground='yellow')
+        word_remove_spinbox.pack(side=LEFT, padx=10, pady=10)
+
+        styles.configure('ChooseColor.TButton', foreground='orange', font=('Helvetica', 22))
         colorchooser_button = ttk.Button(self.settings_frame, style='ChooseColor.TButton', text="Choose Color",
                                          command=self.choose_color)
         colorchooser_button.config()
@@ -421,7 +438,7 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
         # print(self.textData)
 
         if self.validateFields():
-            stopwords_wc = set(stopwords.words('english'))
+            # stopwords_wc = set(stopwords.words('english'))
             # self.max_words = self.max_words.get()
             # print(self.max_words)
             # print(type(self.colorchooser_result))
@@ -430,7 +447,8 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
             imgfilename = self.folder_path + '/WordCloud.png'
             # print(imgfilename)
 
-            cleaned_data_text = perform_WordCloud(self.textData, stopwords_wc, self.max_words.get(), imgfilename,
+            cleaned_data_text = perform_WordCloud(self.textData, self.stoplist, self.max_words.get(),
+                                                  self.varWord_toRemove_haveLength.get(), imgfilename,
                                                   self.colorchooser_result[-1], self.var_Width_Height.get(),
                                                   self.var_Width_Height.get()
                                                   )
@@ -444,54 +462,11 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
             common_words_tuple = analyze_word_frequency(cleaned_data_text, self.varFrequency.get())
 
             # style = ttk.Style()
-            # # style.theme_use('classic')
             # style.configure("Vertical.TScrollbar", background="green", bordercolor="red", arrowcolor="white")
 
             # deleting all child widgets
             for item in self.frame2.winfo_children():
                 item.destroy()
-
-            # self.canvas1 = ttk.Canvas(self.frame2, background="#ffffff", borderwidth=0)
-            # self.frame_inner = ttk.Frame(self.canvas1)
-            # self.scrolly = ttk.Scrollbar(self.frame2, orient="vertical", command=self.canvas1.yview)
-            # self.scrollx = ttk.Scrollbar(self.frame2, orient="horizontal", command=self.canvas1.xview)
-            # self.canvas1.configure(yscrollcommand=self.scrolly.set)
-            # self.canvas1.create_window((4, 4), window=self.frame_inner, anchor="nw", tags="self.frame_inner")
-            #
-            # self.scrolly.pack(side="left", fill="y")
-            # self.canvas1.pack(side="top", fill="both", expand=True)
-            # self.scrollx.pack(side="bottom", fill="x")
-            # self.canvas1.configure(scrollregion=self.canvas.bbox("all"))
-
-            # self.frame_inner.bind("", self.onFrameConfigure)
-            #
-            # self.scrolly.set(0.0, 0.5)
-            # CheckVar11 = tk.IntVar()
-            # scrollbar1 = ttk.Scrollbar(self.frame2)
-            # scrollbar1.pack(side=RIGHT, fill=Y)
-            # pavanlist1 = ttk.Treeview(self.frame2, yscrollcommand=scrollbar1.set)
-            # for pavanline1 in range(100):
-            #     pavanlist1.insert(END, "Line Numbers are " + str(pavanline1) + " now in online ")
-            #     if pavanline1 % 10 == 0:
-            #         C11 = ttk.Checkbutton(self.frame2, text="Line Number : " + str(pavanline1), variable=CheckVar11)
-            #         C11.pack()
-            # pavanlist1.pack(side=LEFT, fill=BOTH)
-            # scrollbar1.config(command=pavanlist1.yview)
-
-            # scrollbar = ttk.Scrollbar(self.frame2)
-            # listbox = ttk.Treeview(self.frame2, yscrollcommand=scrollbar.set, show="tree")
-            # scrollbar.configure(command=listbox.yview)
-            #
-            # scrollbar.pack(side="right", fill="y")
-            # listbox.pack(side="left", fill="both", expand=True)
-
-            # for i in range(100):
-            #     text = f"Item #{i + 1}"
-            #     listbox.insert("", "end", text=text)
-
-            # scrollbar = ttk.Scrollbar(root)
-            # scrollbar.pack(side=RIGHT, fill=Y)
-            # scrollbar.config(command=self.frame2.yview)
 
             # mainframe to make a scrollable window
             self.mainframe = VerticalScrolledFrame(self.frame2)
@@ -527,7 +502,6 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
                     else:
                         vall = common_words_tuple[rrow]
                         count_lbl = ttk.Label(self.Frame_Overview, text=vall[-1], width=10, font='Arial 25')
-                        # count_lbl.config(padx=5)
                         count_lbl.grid(row=rrow, column=ccolumn)
                         cols.append(count_lbl)
                         rows.append(cols)
