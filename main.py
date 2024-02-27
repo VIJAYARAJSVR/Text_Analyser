@@ -211,12 +211,17 @@ class Analyzer_App:
     colorchooser_result = ((0, 0, 0), '#000000')
 
     def __init__(self, master):
+        self.StopWord_window = None
         self.appWidth1 = 600
         self.appHeight1 = 600
         self.tabBar = None
         self.stoplist = None
         self.stoplist = stopwords.words('english')
-        self.arr_stop_words = ["indian", "Ocean", "permission", "another","indian", "Ocean", "permission", "another","indian", "Ocean", "permission", "another","indian", "Ocean", "permission", "another","indian", "Ocean", "permission", "another"]
+        self.arr_stop_words = ["something is better than", "Ocean", "permission", "another", "indian", "Ocean",
+                               "permission", "another", "indian", "Ocean", "permission", "another", "indian", "Ocean",
+                               "permission", "another", "indian", "Ocean", "permission", "another"]
+        self.arr_stop_words = ['hello', 'world']
+
         # stoplist.append("india")
 
         # screen_width = root.winfo_screenwidth()
@@ -242,6 +247,7 @@ class Analyzer_App:
 
         self.var_Width_Height = tk.IntVar()
         self.varFrequency = tk.IntVar()
+        self.varNewStopWords = tk.StringVar()
         self.varWord_toRemove_haveLength = tk.IntVar()
 
         self.var_Width_Height.set(700)
@@ -480,24 +486,21 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
         print("show_image clicked")
 
     def show_stop_words(self):
-        window = ttk.Toplevel(self)
-        window.resizable()
-        window.title('Stop Words')
+        self.StopWord_window = ttk.Toplevel(self)
+        self.StopWord_window.resizable(False, False)
+        self.StopWord_window.title('Stop Words')
         position = f'{self.appWidth1}x{self.appHeight1}' + f'+{self.x_position}+' + f'{self.y_position}'
+        self.StopWord_window.geometry(f'{position}')
 
-        window.geometry(f'{position}')
-
-        add_frame = ttk.Frame(window)
+        add_frame = ttk.Frame(self.StopWord_window)
         add_frame.pack()
-        new_stop_words_textbox = ttk.Entry(add_frame)
-        # new_stop_words_textbox.grid(row=0, column=0, padx=5, pady=5)
+        new_stop_words_textbox = ttk.Entry(add_frame, width=20, font='Arial 25', textvariable=self.varNewStopWords)
         new_stop_words_textbox.pack(padx=5, pady=5, side=LEFT)
-        add_stop_words_button = ttk.Button(add_frame, text="Add Stop Words")
-        # add_stop_words_button.grid(row=0, column=1, padx=5, pady=5, stick='nsew')
+        add_stop_words_button = ttk.Button(add_frame, text="Add Stop Words", command=self.add_stop_words)
         add_stop_words_button.pack(padx=5, pady=5, side=LEFT)
 
         # mainframe to make a scrollable window
-        self.mainframe1 = VerticalScrolledFrame(window)
+        self.mainframe1 = VerticalScrolledFrame(self.StopWord_window)
         # self.mainframe1.grid(row=1, column=0, columnspan=2)
         self.mainframe1.pack(fill=BOTH, expand=1)
 
@@ -512,28 +515,46 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
         self.TNotebook_Overview1.add(self.Frame_Overview1)
         self.TNotebook_Overview1.tab(0, text="Common Words", compound="left", underline="-1", )
 
+        self.Generate_Stop_word_Table()
 
-
+    def Generate_Stop_word_Table(self):
         rows = []
         for rrow in range(len(self.arr_stop_words)):
             cols = []
             for ccolumn in range(2):
                 if ccolumn == 0:
                     vall = self.arr_stop_words[rrow]
-                    count_lbl = ttk.Label(self.Frame_Overview1, text=vall, width=10, font='Arial 25')
-                    count_lbl.grid(row=rrow, column=ccolumn)
+                    count_lbl = ttk.Label(self.Frame_Overview1, text=vall, width=30, font='Arial 25')
+                    count_lbl.grid(row=rrow, column=ccolumn, padx=10, pady=10)
                     cols.append(count_lbl)
                     rows.append(cols)
                 else:
-                    delete_button = ttk.Button(self.Frame_Overview1, text="Delete", command=self.delete_stop_word)
-                    # delete_button.pack(side=LEFT, padx=10, pady=5)
-                    delete_button.grid(row=rrow, column=ccolumn)
+                    delete_button = ttk.Button(self.Frame_Overview1, text="Delete",
+                                               command=lambda m=rrow: self.delete_stop_word(m))
+                    delete_button.grid(row=rrow, column=ccolumn, padx=10, pady=10)
                     cols.append(delete_button)
                     rows.append(cols)
 
-    def delete_stop_word(self):
+    def refresh_stop_words_List(self):
+        # deleting all child widgets
+        for item in self.Frame_Overview1.winfo_children():
+            item.destroy()
+        self.Generate_Stop_word_Table()
 
-        print("delete_stop_word clicked")
+    def add_stop_words(self):
+        self.arr_stop_words.append(self.varNewStopWords.get())
+        print(len(self.arr_stop_words))
+        self.varNewStopWords.set('')
+        self.refresh_stop_words_List()
+
+        # self.StopWord_window.update()
+        # self.StopWord_window.update_idletasks()
+        # print("Refresh completed.")
+
+    def delete_stop_word(self, arr_index):
+        self.arr_stop_words.remove(self.arr_stop_words[arr_index])
+        print(len(self.arr_stop_words))
+        self.refresh_stop_words_List()
 
     def show_chart(self):
         self.tabBar.select(1)
