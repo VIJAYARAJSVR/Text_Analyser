@@ -36,31 +36,37 @@ from tkinter import colorchooser
 from tkinter import messagebox
 
 
-def DrawBarchart_based_Count(chart_canvas, arr_common_words_tuple):
+def DrawBarchart_based_Count(chart_canvas, arr_common_words_tuple,frequency):
     # deleting all child widgets
     for item in chart_canvas.winfo_children():
         item.destroy()
 
     common_data = dict((x, y) for x, y in arr_common_words_tuple)
+    # plt.subplots_adjust(left=0.075, bottom=0.075, right=0.95, top=0.95,
+    #                     wspace=0.2, hspace=0.2)
     fig1, ax1 = plt.subplots()
+    # below code move the x axis up
+    fig1.subplots_adjust(top=0.95,bottom=0.25)
+
     ax1.bar(common_data.keys(), common_data.values())
 
-    ax1.set_title("Common Words")
-    ax1.set_xlabel("Words")
+    ax1.set_title("Top Most Common Words")
+    # ax1.set_xlabel("Words")
     ax1.set_ylabel("Count")
-    ax1.set_xticklabels(ax1.get_xticklabels(), rotation=85)
+    ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90)
     # plt.show()
 
     side_frame = tk.Frame(chart_canvas, bg="#4C2A85")
     side_frame.pack(side="left", fill="y")
 
-    upper_frame = tk.Frame(chart_canvas)
-    upper_frame.pack(fill="both", expand=True)
+    chart_frame = tk.Frame(chart_canvas)
+    chart_frame.pack(fill="both", expand=True)
 
-    canvas1 = FigureCanvasTkAgg(fig1, upper_frame)
+    canvas1 = FigureCanvasTkAgg(fig1, chart_frame)
     canvas1.draw()
     canvas1.get_tk_widget().pack(side="left", fill="both", expand=True)
 
+    # canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
 # NOT COMPLETED
 def DrawBarchart_based_Cumulative_Count(chart_canvas_cumulative, arr_common_words_tuple):
@@ -78,7 +84,7 @@ def DrawBarchart_based_Cumulative_Count(chart_canvas_cumulative, arr_common_word
     ax1.set_title("Common Words")
     ax1.set_xlabel("Words")
     ax1.set_ylabel("Cumulative Count")
-    ax1.set_xticklabels(ax1.get_xticklabels(), rotation=85)
+    # ax1.set_xticklabels(ax1.get_xticklabels(), rotation=10)
     # plt.show()
 
     side_frame = tk.Frame(chart_canvas_cumulative, bg="#4C2A85")
@@ -383,7 +389,7 @@ class Analyzer_App:
         word_remove_lbl.pack(side=LEFT, padx=10, pady=10)
         word_remove_lbl.config(wraplength=100)
 
-        self.varWord_toRemove_haveLength.set(3)
+        self.varWord_toRemove_haveLength.set(2)
         word_remove_spinbox = Spinbox(self.settings_frame, from_=2, to=5, increment=1,
                                       textvariable=self.varWord_toRemove_haveLength)
         word_remove_spinbox.config(font=('Courier', 24, 'bold'), width=2, foreground='yellow')
@@ -639,11 +645,11 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
             self.img = ImageTk.PhotoImage(Image.open(img_file_name))
             self.canvas.create_image(10, 10, anchor=NW, image=self.img)
             self.canvas.image = self.img
-            # Visualization of top 50 most common words in text
+            # Visualization of top N most common words in text
             common_words_count_tuple = analyze_word_frequency(cleaned_data_text, self.varFrequency.get())
 
             # Visualization of top N most common words in text
-            DrawBarchart_based_Count(self.chart_canvas_count, common_words_count_tuple)
+            DrawBarchart_based_Count(self.chart_canvas_count, common_words_count_tuple, self.varFrequency.get())
 
             # PENDING TASK PENDING TASK
             # DrawBarchart_based_Cumulative_Count(self.chart_canvas_cumulative_count, common_words_count_tuple)
@@ -728,8 +734,8 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     printing('**************************')
-    appWidth = 1200
-    appHeight = 1000
+    appWidth = 1300
+    appHeight = 1100
     # root = ttk.Window(themename="darkly", size=(800, 800), resizable=(True, True), title='Text Analyzer',
     #                   maxsize = (1300, 1300),minsize=(appWidth, appHeight), position = (400, 400))
     root = ttk.Window(themename="darkly", resizable=(True, True), title='Text Analyzer', minsize=(appWidth, appHeight))
