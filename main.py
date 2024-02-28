@@ -3,6 +3,7 @@
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 import os
+import subprocess
 from tkinter.ttk import Spinbox
 
 import agg
@@ -36,21 +37,21 @@ from tkinter import colorchooser
 from tkinter import messagebox
 
 
-def DrawBarchart_based_Count(chart_canvas, arr_common_words_tuple,frequency):
+def DrawBarchart_based_Count(chart_canvas, arr_common_words_tuple, frequency):
     # deleting all child widgets
     for item in chart_canvas.winfo_children():
         item.destroy()
 
-    common_data = dict((x, y) for x, y in arr_common_words_tuple)
+    common_data_dict = dict((x, y) for x, y in arr_common_words_tuple)
     # plt.subplots_adjust(left=0.075, bottom=0.075, right=0.95, top=0.95,
     #                     wspace=0.2, hspace=0.2)
     fig1, ax1 = plt.subplots()
     # below code move the x axis up
-    fig1.subplots_adjust(top=0.95,bottom=0.25)
+    fig1.subplots_adjust(top=0.95, bottom=0.25, left=0.065)
 
-    ax1.bar(common_data.keys(), common_data.values())
+    ax1.bar(common_data_dict.keys(), common_data_dict.values())
 
-    ax1.set_title("Top Most Common Words")
+    ax1.set_title("Top " + str(frequency) + " Most Common Words")
     # ax1.set_xlabel("Words")
     ax1.set_ylabel("Count")
     ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90)
@@ -67,6 +68,7 @@ def DrawBarchart_based_Count(chart_canvas, arr_common_words_tuple,frequency):
     canvas1.get_tk_widget().pack(side="left", fill="both", expand=True)
 
     # canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
 
 # NOT COMPLETED
 def DrawBarchart_based_Cumulative_Count(chart_canvas_cumulative, arr_common_words_tuple):
@@ -186,8 +188,8 @@ def analyze_word_frequency(text_to_process, most_common):
         freq_dist[word.lower()] += 1
 
     common_words = freq_dist.most_common(most_common)
-    for freq in common_words:
-        print(freq)
+    # for freq in common_words:
+    #     print(freq)
 
     return common_words
     # plt.figure(figsize=(12, 6))
@@ -200,7 +202,6 @@ def perform_WordCloud(text_to_process, stoplist, max_wordsss, Word_toRemove_have
     cleaned_Data = dataCleaning(text_to_process)
 
     cleaned_Txt = textCleaning(cleaned_Data, stoplist, Word_toRemove_haveLength)
-
 
     # converting 2-D Array into single String
     cleaned_data_text = ' '.join(' '.join(map(str, i)) for i in cleaned_Txt)
@@ -270,6 +271,7 @@ class Analyzer_App:
     colorchooser_result = ((0, 0, 0), '#000000')
 
     def __init__(self, master):
+        self.common_words_count_tuple = []
         self.StopWord_window = None
         self.appWidth1 = 600
         self.appHeight1 = 600
@@ -316,6 +318,7 @@ class Analyzer_App:
         root.bind('<Command-i>', lambda event: self.show_image())
         root.bind('<Command-t>', lambda event: self.show_chart())
         root.bind('<Command-s>', lambda event: self.show_stop_words())
+        root.bind('<Command-k>', lambda event: self.copy_common_words())
 
         # style applying to global
         styles = ttk.Style()
@@ -501,6 +504,17 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
         shortcut_lbl.pack(padx=5, pady=5, side=LEFT)
         shortcut_lbl.config(wraplength=300)
 
+        copy_button = ttk.Button(short_frame, text="Copy Words", command=self.copy_common_words, bootstyle=DANGER, )
+        copy_button.pack(padx=5, pady=5, side=LEFT)
+
+        shortcut_lbl = ttk.Label(short_frame, text="cmd+K", width=5)
+        shortcut_lbl.config(foreground='blue', background='yellow')
+        shortcut_lbl.config(font=('Courier', 18, 'bold'))
+        shortcut_lbl.pack(padx=5, pady=5, side=LEFT)
+        shortcut_lbl.config(wraplength=300)
+
+
+
         self.tabBar = ttk.Notebook(frame3)
         self.tabBar.pack()
 
@@ -525,13 +539,20 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
                                                         height=self.var_Width_Height.get() + 170)
         self.chart_canvas_cumulative_count.pack(fill=BOTH, expand=YES)
 
-
         # create a scrollbar widget and set its command to the text widget
         # scrollbar = ttk.Scrollbar(root, orient='vertical', command = self.canvas.yview)
         # scrollbar.grid(row=0, column=1, sticky=tk.NS)
 
         # scrollbar = ttk.Scrollbar(frame11, orient=VERTICAL)
         # scrollbar.pack(fill=BOTH, expand=YES)
+
+    def copy_common_words(self):
+        common_data_dict = dict((x, y) for x, y in self.common_words_count_tuple)
+
+        if len(common_data_dict) > 0:
+            common_words = " , ".join(common_data_dict.keys())
+            subprocess.run("pbcopy", text=True, input=common_words)
+            print("copied")
 
     def choose_color(self):
         self.colorchooser_result = colorchooser.askcolor(initialcolor='#000000')
@@ -646,10 +667,12 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
             self.canvas.create_image(10, 10, anchor=NW, image=self.img)
             self.canvas.image = self.img
             # Visualization of top N most common words in text
-            common_words_count_tuple = analyze_word_frequency(cleaned_data_text, self.varFrequency.get())
+
+            self.common_words_count_tuple = []
+            self.common_words_count_tuple = analyze_word_frequency(cleaned_data_text, self.varFrequency.get())
 
             # Visualization of top N most common words in text
-            DrawBarchart_based_Count(self.chart_canvas_count, common_words_count_tuple, self.varFrequency.get())
+            DrawBarchart_based_Count(self.chart_canvas_count, self.common_words_count_tuple, self.varFrequency.get())
 
             # PENDING TASK PENDING TASK
             # DrawBarchart_based_Cumulative_Count(self.chart_canvas_cumulative_count, common_words_count_tuple)
@@ -686,14 +709,14 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
                 cols = []
                 for ccolumn in range(2):
                     if ccolumn == 0:
-                        vall = common_words_count_tuple[rrow]
+                        vall = self.common_words_count_tuple[rrow]
                         word_entry = ttk.Entry(self.Frame_Overview, width=9, font='Arial 30')
                         word_entry.grid(row=rrow, column=ccolumn)
                         word_entry.insert(END, (vall[0]))
                         cols.append(word_entry)
                         rows.append(cols)
                     else:
-                        vall = common_words_count_tuple[rrow]
+                        vall = self.common_words_count_tuple[rrow]
                         count_lbl = ttk.Label(self.Frame_Overview, text=vall[-1], width=10, font='Arial 25')
                         count_lbl.grid(row=rrow, column=ccolumn)
                         cols.append(count_lbl)
