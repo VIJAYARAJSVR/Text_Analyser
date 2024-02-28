@@ -5,6 +5,8 @@
 import os
 from tkinter.ttk import Spinbox
 
+import agg
+import matplotlib
 import nltk
 # nltk.download('punkt')
 # nltk.download('stopwords')
@@ -17,8 +19,11 @@ import pandas as pd
 from os import path
 from PIL import ImageTk, Image
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-import matplotlib
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+
+matplotlib.use('agg')
 import re
 
 import tkinter as tk
@@ -29,6 +34,36 @@ from ttkbootstrap.constants import *
 from tkinter.scrolledtext import ScrolledText
 from tkinter import colorchooser
 from tkinter import messagebox
+
+
+def DrawBarchart(chart_canvas, arr_common_words_tuple):
+    # deleting all child widgets
+    for item in chart_canvas.winfo_children():
+        item.destroy()
+
+    common_data = dict((x, y) for x, y in arr_common_words_tuple)
+    fig1, ax1 = plt.subplots()
+    ax1.bar(common_data.keys(), common_data.values())
+
+    ax1.set_title("Common Words")
+    ax1.set_xlabel("Words")
+    ax1.set_ylabel("Count")
+    ax1.set_xticklabels(ax1.get_xticklabels(), rotation=85)
+    # plt.show()
+
+    side_frame = tk.Frame(chart_canvas, bg="#4C2A85")
+    side_frame.pack(side="left", fill="y")
+
+    # label = tk.Label(side_frame, text="Dashboard", bg="#4C2A85", fg="#FFF", font=25)
+    # label.pack(pady=50, padx=20)
+    # label.config(wraplength=30)
+
+    upper_frame = tk.Frame(chart_canvas)
+    upper_frame.pack(fill="both", expand=True)
+
+    canvas1 = FigureCanvasTkAgg(fig1, upper_frame)
+    canvas1.draw()
+    canvas1.get_tk_widget().pack(side="left", fill="both", expand=True)
 
 
 def printing(name):
@@ -215,17 +250,9 @@ class Analyzer_App:
         self.appWidth1 = 600
         self.appHeight1 = 600
         self.tabBar = None
-        # self.stoplist = None
+
         self.stoplist = stopwords.words('english')
-        self.arr_stop_words = ["something is better than", "Ocean", "permission", "another", "indian", "Ocean",
-                               "permission", "another", "indian", "Ocean", "permission", "another", "indian", "Ocean",
-                               "permission", "another", "indian", "Ocean", "permission", "another"]
-        self.arr_stop_words = ['hello', 'world']
-
-        # stoplist.append("india")
-
-        # screen_width = root.winfo_screenwidth()
-        # screen_height = root.winfo_screenheight()
+        self.arr_stop_words = []
 
         self.x_position = int((screen_width / 2) - (self.appWidth1 / 2))
         self.y_position = int((screen_height / 2) - (self.appHeight1 / 2))
@@ -238,6 +265,7 @@ class Analyzer_App:
         self.frame2 = None
         self.textbox = None
         self.canvas = None
+        self.chart_canvas = None
         self.canvas1 = None
         self.frame_inner = None
         self.scrolly = None
@@ -256,7 +284,6 @@ class Analyzer_App:
 
     def initialize_UI(self):
         # Variables
-
         root.bind('<Command-g>', lambda event: self.generate())
         root.bind('<Command-o>', lambda event: self.open_file_dialog())
         root.bind('<Command-p>', lambda event: self.clear_paste())
@@ -355,12 +382,6 @@ class Analyzer_App:
 
         show_stop_button = ttk.Button(self.settings_frame, text="Stop\nWords", command=self.show_stop_words)
         show_stop_button.pack(side=LEFT, padx=10, pady=5)
-
-        # shortcut_lbl = ttk.Label(self.settings_frame, text="cmd+R", width=5)
-        # shortcut_lbl.config(foreground='blue', background='yellow')
-        # shortcut_lbl.config(font=('Courier', 18, 'bold'))
-        # shortcut_lbl.pack(padx=5, pady=5, side=LEFT)
-        # shortcut_lbl.config(wraplength=300)
 
         path_row = ttk.Frame(root)
         path_row.pack(fill=BOTH, expand=YES)
@@ -468,6 +489,10 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
         self.canvas = ttk.Canvas(frame11, width=self.var_Width_Height.get() + 170,
                                  height=self.var_Width_Height.get() + 170)
         self.canvas.pack(fill=BOTH, expand=YES)
+
+        self.chart_canvas = ttk.Canvas(frame22, width=self.var_Width_Height.get() + 170,
+                                       height=self.var_Width_Height.get() + 170)
+        self.chart_canvas.pack(fill=BOTH, expand=YES)
 
         # create a scrollbar widget and set its command to the text widget
         # scrollbar = ttk.Scrollbar(root, orient='vertical', command = self.canvas.yview)
@@ -584,12 +609,14 @@ Our favorite type of filtration for gentle flow is a sponge filter with a smalle
                                                   )
 
             img_file_name = self.folder_path + '/WordCloud.png'
-            print(img_file_name)
+            # print(img_file_name)
             self.img = ImageTk.PhotoImage(Image.open(img_file_name))
             self.canvas.create_image(10, 10, anchor=NW, image=self.img)
             self.canvas.image = self.img
 
             common_words_tuple = analyze_word_frequency(cleaned_data_text, self.varFrequency.get())
+
+            DrawBarchart(self.chart_canvas, common_words_tuple)
 
             # style = ttk.Style()
             # style.configure("Vertical.TScrollbar", background="green", bordercolor="red", arrowcolor="white")
