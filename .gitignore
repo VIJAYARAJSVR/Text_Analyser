@@ -104,3 +104,4 @@ dmypy.json
 cython_debug/
 *.png
 wordcloud_output.png
+.DS_Store
